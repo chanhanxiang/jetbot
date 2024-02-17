@@ -1,0 +1,36 @@
+tf2 ssd MobileNetV2 no freezing
+
+INFO:tensorflow:Step 100 per-step time 2.820s loss=0.572
+I0217 06:55:36.821419 139915716810560 model_lib_v2.py:652] Step 100 per-step time 2.820s loss=0.572
+INFO:tensorflow:Step 200 per-step time 2.142s loss=0.499
+I0217 06:59:18.986370 139915716810560 model_lib_v2.py:652] Step 200 per-step time 2.142s loss=0.499
+INFO:tensorflow:Step 300 per-step time 2.137s loss=0.657
+I0217 07:02:57.782343 139915716810560 model_lib_v2.py:652] Step 300 per-step time 2.137s loss=0.657
+INFO:tensorflow:Step 400 per-step time 2.143s loss=0.464
+I0217 07:06:38.050702 139915716810560 model_lib_v2.py:652] Step 400 per-step time 2.143s loss=0.464
+INFO:tensorflow:Step 500 per-step time 2.137s loss=0.488
+I0217 07:10:14.865673 139915716810560 model_lib_v2.py:652] Step 500 per-step time 2.137s loss=0.488
+INFO:tensorflow:Step 600 per-step time 2.814s loss=0.434
+I0217 07:13:57.802336 139915716810560 model_lib_v2.py:652] Step 600 per-step time 2.814s loss=0.434
+INFO:tensorflow:Step 700 per-step time 2.175s loss=0.405
+I0217 07:17:40.677191 139915716810560 model_lib_v2.py:652] Step 700 per-step time 2.175s loss=0.405
+INFO:tensorflow:Step 800 per-step time 2.196s loss=0.443
+I0217 07:21:19.668803 139915716810560 model_lib_v2.py:652] Step 800 per-step time 2.196s loss=0.443
+INFO:tensorflow:Step 900 per-step time 2.190s loss=0.316
+I0217 07:24:57.905065 139915716810560 model_lib_v2.py:652] Step 900 per-step time 2.190s loss=0.316
+INFO:tensorflow:Step 1000 per-step time 2.144s loss=0.394
+I0217 07:28:35.257964 139915716810560 model_lib_v2.py:652] Step 1000 per-step time 2.144s loss=0.394
+INFO:tensorflow:Step 1100 per-step time 2.164s loss=0.367
+I0217 07:32:13.130486 139915716810560 model_lib_v2.py:652] Step 1100 per-step time 2.164s loss=0.367
+INFO:tensorflow:Step 1200 per-step time 2.163s loss=0.353
+I0217 07:35:53.108480 139915716810560 model_lib_v2.py:652] Step 1200 per-step time 2.163s loss=0.353
+INFO:tensorflow:Step 1300 per-step time 2.160s loss=0.366
+I0217 07:39:29.273160 139915716810560 model_lib_v2.py:652] Step 1300 per-step time 2.160s loss=0.366
+INFO:tensorflow:Step 1400 per-step time 2.156s loss=0.301
+I0217 07:43:06.859341 139915716810560 model_lib_v2.py:652] Step 1400 per-step time 2.156s loss=0.301
+INFO:tensorflow:Step 1500 per-step time 2.146s loss=0.436
+I0217 07:46:45.103530 139915716810560 model_lib_v2.py:652] Step 1500 per-step time 2.146s loss=0.436
+INFO:tensorflow:Step 1600 per-step time 2.111s loss=0.326
+I0217 07:55:30.628542 139915716810560 model_lib_v2.py:652] Step 1600 per-step time 2.111s loss=0.326
+INFO:tensorflow:Step 1700 per-step time 2.192s loss=0.379
+I0217 08:05:31.336698 139915716810560 model_lib_v2.py:652] Step 1700 per-step time 2.192s loss=0.379

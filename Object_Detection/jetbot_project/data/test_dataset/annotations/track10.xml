@@ -1,0 +1,26 @@
+<annotation>
+	<folder>test_dataset</folder>
+	<filename>3ca24ea2-5ee9-11eb-b44c-72b5f773b75d.jpg</filename>
+	<path>E:\MunTuck\NYP\code\project\dataset\dataset_right01\test_dataset\3ca24ea2-5ee9-11eb-b44c-72b5f773b75d.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>224</width>
+		<height>224</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>approach corner</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>23</xmin>
+			<ymin>119</ymin>
+			<xmax>215</xmax>
+			<ymax>224</ymax>
+		</bndbox>
+	</object>
+</annotation>

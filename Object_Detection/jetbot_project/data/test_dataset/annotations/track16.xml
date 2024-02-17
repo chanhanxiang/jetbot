@@ -1,0 +1,26 @@
+<annotation>
+	<folder>test_dataset</folder>
+	<filename>711f8324-5ef4-11eb-b44c-72b5f773b75d.jpg</filename>
+	<path>E:\MunTuck\NYP\code\project\dataset\dataset_right01\test_dataset\711f8324-5ef4-11eb-b44c-72b5f773b75d.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>224</width>
+		<height>224</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>right exit complete</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>83</xmin>
+			<ymin>124</ymin>
+			<xmax>222</xmax>
+			<ymax>224</ymax>
+		</bndbox>
+	</object>
+</annotation>
