@@ -1,0 +1,42 @@
+<h4>Please download Report.docx for full report, only introduction in readme</h4>
+
+Introduction
+Self-driving cars or autonomous cars have been receiving tremendous attention due to Deep Neural Network (DNN) that automate a lot of manual tasks of driving the car. Autonomous cars are vehicles that are capable of sensing their environment and moving safely with little or no human input. The vehicles can interpret sensory information to identify appropriate navigation paths, as well as obstacles and relevant signage. The main motivation is to minimise road accident due to human error or fatigue while driving. 
+
+There a six different level of autonomous classification:
+
+• Level 0: All functionality and systems of the car are controlled by humans. No automation.
+
+• Level 1: Minor things like cruise control, automatic braking, or detecting something in the blind spot may be controlled by the computer, one at a time
+
+• Level 2: A human is still required for safe operation and emergency procedures. The computer can perform some simultaneous automated functions, such as acceleration and steering.
+
+• Level 3: The computer can control all critical operations of the car simultaneously including accelerating, steering, stopping, navigation and parking under most conditions. A human driver is still expected to be present in case they are alerted of an emergency.
+
+• Level 4: The car is fully autonomous, without any need for a human driver, in some driving scenarios (i.e snowing). 
+
+• Level 5: The car is completely fully autonomous and capable of self-driving in every situation
+
+In this project, the car will be simulated using Jetson Nano Bots and the road that cars are driven on are simulated with a black single lane as the marker that the car would track on. The car will be self-driven on the road based on the video stream captured by the front-facing camera on the car.
+
+Formulation and Framing of ML Problem
+
+Problem Articulation: 
+
+We will simulate a self-driving car and develop a deep learning model to detect the lane and map the position of the lane to direction to move (left or right) to keep the car on track of the road. 
+
+The objectives of this project are:
+
+i)	Develop a NN-based model that track the lane line.
+
+ii)	Develop steering prediction algorithm to keep the car on the road.
+
+iii)	Develop a NN-based acceleration/deceleration of the car. The car would accelerate to max road speed if the road is straight and de-acceleration when it is turning at the corner (left/right corners).
+
+iv)	Develop a NN-based traffic light and road sign detection and change the speed of the car to obey the traffic rules.
+
+The problem is best framed as a both a object detection task which predicts lane directions and traffic signs/lights classes as well as the location and dimensions of the objects indicated by bounding boxes.
+
+Starting with Simple Model:
+
+We will be starting with “Tensorflow Object Detection model (SSD-Resnet50)” which comprises of Single-Shot MultiBox Detector (SSD) for object detection and ResNet 50 for classification in the bounding box. This model serves as baseline when experimenting with more complex models.
