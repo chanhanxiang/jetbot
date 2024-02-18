@@ -1,6 +1,7 @@
-<h4>Please download Report.docx for full report, only introduction in readme</h4>
+<h4>Please download Report.docx for full report, Readme serves as summary introduction</h4>
 
-Introduction
+<h3>Introduction</h3> 
+
 Self-driving cars or autonomous cars have been receiving tremendous attention due to Deep Neural Network (DNN) that automate a lot of manual tasks of driving the car. Autonomous cars are vehicles that are capable of sensing their environment and moving safely with little or no human input. The vehicles can interpret sensory information to identify appropriate navigation paths, as well as obstacles and relevant signage. The main motivation is to minimise road accident due to human error or fatigue while driving. 
 
 There a six different level of autonomous classification:
@@ -19,7 +20,7 @@ There a six different level of autonomous classification:
 
 In this project, the car will be simulated using Jetson Nano Bots and the road that cars are driven on are simulated with a black single lane as the marker that the car would track on. The car will be self-driven on the road based on the video stream captured by the front-facing camera on the car.
 
-Formulation and Framing of ML Problem
+<h3>Problem statement</h3>
 
 Problem Articulation: 
 
