@@ -144,6 +144,8 @@ Getting the angle using arc tangent of x and y co-ordinates:
 
 Based on the angle from the center of the Jetbot and sum the angle of steering gain plus the differences of current angle and previous angle and multiple with D gain to get now much to increase or decrease the left and right motor.
 
+```bash
+
     speed_slider.value = speed_gain_slider.value
     angle = np.arctan2(x, y)
     pid = angle * steering_gain_slider.value + (angle - angle_last) * steering_dgain_slider.value
@@ -152,6 +154,8 @@ Based on the angle from the center of the Jetbot and sum the angle of steering g
    
     robot.left_motor.value = max(min(speed_slider.value + steering_slider.value, 1.0), 0.0)
     robot.right_motor.value = max(min(speed_slider.value - steering_slider.value, 1.0), 0.0)
+
+```
 
 ![Screenshot from 2024-02-19 11-28-21](https://github.com/chanhanxiang/jetbot/assets/107524953/dc713029-85ed-4f49-af0a-6e3e6857e65b)
 
@@ -216,7 +220,7 @@ The first model used was the SSD Mobilenet V2 as shown below. It is an efficient
 
 ![SSD](https://github.com/chanhanxiang/jetbot/assets/107524953/44a7b6b0-5811-4c6e-a92d-03f41b8ae4b8)
 
-In addition, the author selected this model due to the road pattern being easily distinguishable from the 5 classes. For the SSD Mobilenet V2, the loss obtained was 0.301, overall precision and recall are 0.6 mAP and 0.7 AR. By using transfer learning, this accuracy was accomplished by training the object detection model for 1400 steps in around 50 mintues (see Appendix for more detail on performance metric graph). 
+In addition, the author selected this model due to the road pattern being easily distinguishable from the 5 classes. For the SSD Mobilenet V2, the loss obtained was 0.301, overall precision and recall are 0.6 mAP and 0.7 AR. By using transfer learning, this accuracy was accomplished by training the object detection model for 1400 steps in around 50 mintues.
 
 ![Screenshot from 2024-02-19 14-18-32](https://github.com/chanhanxiang/jetbot/assets/107524953/4d374995-adc2-4c42-a8b0-ae90fa32e1a7)
 
@@ -345,6 +349,8 @@ This step generates an intermediate SavedModel that can be used with the TFLite 
     --trained_checkpoint_dir=%TRAINED_CHECKPOPINT_DIR%
     --output_directory=%OUTPUT_DIRECTORY%
 
+```
+
 Step 2: Convert to TFLite
 
 This step uses the TensorFlow Lite Converter Python api to convert the SavedModel (from previous step) to TFLite format.
@@ -374,6 +380,8 @@ Also successfully tested with tf.compat.v1.lite.TFLiteConverter.from_frozen_grap
     )
     converter.allow_custom_ops = True
 
+```
+
 Note: In order to use tf.compat.v1.lite.TFLiteConverter, the SavedModel must be generated with export_tflite_ssd_graph.py instead of export_tflite_graph_tf2.py during step 1:
 
 ```bash
@@ -388,6 +396,7 @@ Note: In order to use tf.compat.v1.lite.TFLiteConverter, the SavedModel must be 
     --output_directory=%OUTPUT_DIRECTORY%
     --add_postprocessing_op=true
 
+```
 
 <h5>Post-training quantization</h5>
 
@@ -413,3 +422,30 @@ Possible disadvantages of float16 quantization:
 | Custom SSD ResNet50 V1 FPN    |  >5 sec | >> 5 sec              |
 
 Considering the faster response time for inference, custom trained SSD mobilenet v2 is chosen as the final model for deployment into Jetbot Nano.
+
+<h5>TFLite Inference</h5>
+
+The inference process involves pre-processing steps (and optionally post processing steps). Pre-processing is done on the input image by using the Keras function tf.keras.applications.mobilenet_v2.preprocess_input. It was initially planned to be used for object_detection.utils.get_configs_from_pipeline_file, to get the pipeline configuration info from the pipeline.config file, and then use it to build the detection mode by use of object_detection.builders.build. After that, its preprocess function can be invoked to pre-process the input image.
+
+![Screenshot from 2024-02-19 18-16-16](https://github.com/chanhanxiang/jetbot/assets/107524953/1d94f076-a4a5-4b4f-b8c3-e76aa40c06ef)
+
+However, this will require installation of “Object Detection API with TensorFlow 2” on Jetson Nano which was unsuccessful due to incompatible modules that comes preinstalled on jetpack 4.5. Therefore, tf.keras.applications.mobilenet_v2.preprocess_input is used as a workaround. The following code fragment shows the pre-processing and inference process:
+
+![Screenshot from 2024-02-19 18-22-47](https://github.com/chanhanxiang/jetbot/assets/107524953/d8fda249-610a-492d-ae56-346e9392d60a)
+
+However, as there are currently no support for post processing functions available in Keras, the application code needs a workaround to handle it. This is the post-processing config extracted from customized SSD mobilnet v2 pipeline.config:
+
+![Screenshot from 2024-02-19 18-23-02](https://github.com/chanhanxiang/jetbot/assets/107524953/68fbfa46-b77a-48c6-b412-a649b7cae1d7)
+
+This means non max suppression is not done and so there will be many nearby detections for a single object. So, the solution is that application code simply takes the predicted object with highest confidence score and ignore the rest. This is possible because only 1 object is expected to be detected for detecting lane class.
+
+<h5>Prediction</h5>
+
+After passing through the Object Detection module to find out the condition of the road based on the bounding boxes, the classification result of the object is used by the Prediction module to decide on the steering direction of Jetson Nano Bot and the speed of the car. This is determined by the following the rules based on Decision Tree. 
+
+<h3>References</h3>
+
+Islam, Chowdhury, Li, Hu (2019), VISION-BASED NAVIGATION OF AUTONOMOUS VEHICLE IN ROADWAY ENVIRONMENTS WITH
+UNEXPECTED HAZARDS (https://arxiv.org/ftp/arxiv/papers/1810/1810.03967.pdf)
+
+
