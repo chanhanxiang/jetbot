@@ -1,6 +1,4 @@
-<h4>Please download Report.docx for full report, Readme serves as summary introduction</h4>
-
-<h3>Introduction</h3> 
+<h2>Introduction</h2> 
 
 Self-driving cars or autonomous cars have been receiving tremendous attention due to Deep Neural Network (DNN) that automate a lot of manual tasks of driving the car. Autonomous cars are vehicles that are capable of sensing their environment and moving safely with little or no human input. The vehicles can interpret sensory information to identify appropriate navigation paths, as well as obstacles and relevant signage. The main motivation is to minimise road accident due to human error or fatigue while driving. 
 
@@ -22,7 +20,7 @@ There a six different level of autonomous classification:
 
 In this project, the car will be simulated using Jetson Nano Bots and the road that cars are driven on are simulated with a black single lane as the marker that the car would track on. The car will be self-driven on the road based on the video stream captured by the front-facing camera on the car.
 
-<h4>Problem statement</h4>
+<h3>Problem statement</h3>
 
 Problem Articulation: 
 
@@ -40,7 +38,7 @@ iv)	Develop a NN-based traffic light and road sign detection and change the spee
 
 The problem is best framed as a both a object detection task which predicts lane directions and traffic signs/lights classes as well as the location and dimensions of the objects indicated by bounding boxes. We will be starting with Tensorflow Object Detection model (SSD-Resnet50) which comprises of Single-Shot MultiBox Detector (SSD) for object detection and ResNet 50 for classification in the bounding box. This model serves as baseline when experimenting with more complex models.
 
-<h3>Methodology</h3>
+<h2>Preprocessing</h2>
 
 First, the image dataset for self-driving car is generated with the front camera on Jetson Nano Bot. These images can be classified by five classes of objects. They are: Left, Right, Straight, Traffic Light (Red, Yellow and Green) and Traffic sign (Stop etc). Below show images collected for different classes:
 
@@ -49,6 +47,7 @@ First, the image dataset for self-driving car is generated with the front camera
 The image dataset is annotated and used to train on the Tensorflow Object Detection model (SSD-Resnet50) to detect the lane, traffic light and traffic sign. We will be using Single-Shot MultiBox Detector (SSD) for object detection and ResNet 50 for classification in the bounding box. The figure below shows the block diagram on how the self-driving car perform lane detection and steering of the wheels.
 
 <h3>Deep learning model</h3>
+
 The trained model is deployed to the Jetson Nano Bot and the car is placed on a lane to begin driving around the track. The images captured by the front camera are resize to 224 x224 pixel before sending to the SSD-ResNet50 model for inferencing. It will detect objects like straight lane, left corner, right corner, traffic light and it’s state (red, yellow or green), and traffic sign such as stop sign. The model will give an output with 5 parameters for each object detected: Class, top, bottom, left and right pixel position. 
 
 A prediction module will analyse the objects that were being detected and return command for driving direction such as “Turn Left 30 degree” or “Drive Straight”. When the lane is straight, the module can determine if it is able to accelerate the car. If a corner is detected far away, it will maintain the speed of the car. When the corner is near, it will return command “Apply Brake” to slow down the car to turn safely around the bend/corner.
@@ -85,7 +84,7 @@ During post-training quantization, TensorFlow Lite Converter will be used to con
 
 ![Real time obj](https://github.com/chanhanxiang/jetbot/assets/107524953/90c80147-406b-47f4-8957-e1b831a87c24)
 
-<h5>Data collection</h5>
+<h2>Data collection</h2>
 
 In this project, we will be doing data collection using the Jetson Nano Bot to generate the dataset with game controller as shown in the figure below. The live camera feed from the onboard lens will capture images of what is in front of the jetbot car (see below left). This can be done by using jupyter notebook to control the car movements (forward, backward, stop, left and right) and then take pictures at various positions where the car is in. The use of ipywidgets serves as a way for us to interact with the car’s movement controls and facilitate the image capturing. 
 
@@ -105,7 +104,7 @@ The test dataset for both methods are 168 images.
 
 Image pre-processing is performed on these image capture by Jetson Nano Bot. These images are resized to 224 x 224 pixels and reshape to (1, 224,224, 3) to add a new dimension for batch size. Augmentation is used to improve the training accuracy by generating additional images with random horizontal flip.
 
-<h5>Annotation</h5>
+<h2>Annotation</h2>
 
 ![Screenshot from 2024-02-19 11-15-07](https://github.com/chanhanxiang/jetbot/assets/107524953/7b9ebe70-9186-4dbb-95e5-5cab7e08de34)
 
@@ -115,7 +114,7 @@ To label objects in the object detection method, the objects in the image are la
 
 TFOD requires dataset to be saved in Tfrecord format. To create the required TFRecord for training set and testing set from the image files and xml files in training and testing directory respectively. After tfrecords are created, These tfrecords (“project_train.record-00000-of-00001” (816 images) and “project_test.record-00000-of-00001” (20 images) they are stored in the data directory.
 
-<h5>Implementation plan</h5>
+<h2>Implementation plan</h2>
 
 We intended to do 3 modules. For the road following, we decided to try on Deep Learning on Regression model and Object Detection. For the Object of Pedestrian, Vehicle, Traffic Sign and Traffic Lights detection, we intended to combine with existing road following so that the solution is as a whole.
 
@@ -164,7 +163,7 @@ Based on the angle from the center of the Jetbot and sum the angle of steering g
 
 Based on NVIDIA stats, TensorRT is a better high-performance deep learning inference than just using it on the quantized file in Jetbot. Surprisingly, the Jetbot with TensorRT engine can run up to max speed of 0.31 with no off the track running Jetbot for half an hour. As for Jetbot without TensorRT engine (only Quantization), the max speed is only of 0.21 with no off the track running Jetbot for half an hour. This proves that the TensorRT is a much better high-performance deep learning inference than the quantized model.
 
-<h5>2. Navigation using Object Detection</h5>
+<h4>2. Navigation using Object Detection</h4>
 
 The source code came from Nvida, with only slight modification to suit this exercise's requirement. Enhancement is done to include object detection of Pedestrian, Vehicle, Traffic Sign and Traffic Lights detection. Since there is only a single lane on the test track, experiment to manoeuvre the car to another lane cannot be carried out. Therefore, some of the Traffic signs for lane changing are not suitable. We can only set the car to go forward or to stop. Based on that, we have two classes namely stop or go and we decide to do the binary classes of classification NN model. NVIDIA also provides functions for collision avoidance, from which it was taken and customised for this project. For the collision avoidance of the object detected, it will either move left or right based on customised design. For this project, instead of manoeuvring the car to another direction, the car stops by object detection such as Traffic light (Red, Amber) and Traffic sign such as Stop sign etc. Here are some of the collected data samples:
 
@@ -175,3 +174,24 @@ Likewise, pre-trained ResNet-18 model with 1000 class labels is also used. Since
 In the Jetbot, there are 2 models (Road Following and Road Obeying which follow traffic sign, traffic light and avoid collision). A check is created to see if there is blocked object detection detect based on the probability of more than 80%, the robot stops, else it will continue with road following. Below is the source code to choose between road following or road object detection:
 
 ![Screenshot from 2024-02-19 12-06-45](https://github.com/chanhanxiang/jetbot/assets/107524953/148f8d60-f43a-46ef-a0d4-f78eed271891)
+
+There seems to be a latency issue in camera and upon investigation, too many images were captured which caused a lot of backlog. Hence the root cause for camera lag and sometimes, Jetbot crashes due to error log full as it could not keep up the log recycle. To resolve this issue, unnecessary logs can be disabled by entering the following commands in the Jetbot terminal:
+
+sudo service rsyslog stop
+sudo systemctl disable rsyslog
+
+Another solution is to use Zmq camera instead of Jetbot camera library. The Zmq camera can be run using a python script from the backend. This can reduce the screen speed to capture 21fps and clean up excess screen input so that there is no backlog and screen capture will be real time. Also this resolves the camera lag issues and greatly improves the speed of the Jetbot by increase the speed gain up to 0.7.
+
+<h4>3. Object Detection</h4>
+
+In the second part of self-driving car project, object detection for road tracking shall be tried out. The advantage is that it can do more tasks such as it can perceive the environment and act accordingly in real time. The car can accelerate/decelerate based on the condition of the road by adjusting the power of the motor on the left and right wheels. It can detect objects like traffic lights, signs and pedestrians using the same DL model.
+
+The cons being time taken to perform inferencing may exceed the limit due to the hardware platform used. In future, we can use better GPU on devices, a different quantisation method to optimise further and using Nvidia TensorRT for models.
+
+Applications suitable for deployment are: robots in the factory floor to transfer goods, cleaning and disinfection of shopping center and workplace, and patrolling of building complex for security and abnormalities in premise.
+
+Three pre-trained models (SSD MobileNet V2, SSD MobileNet V1 FPN and SSD ResNet50) were tried out. They are selected because SSD are the only detector support by TFLite in TensorFlow V2.3.1 for conversion to tflite files. MobileNet is selected due to the speed of the inference and ResNet50 for its accuracy in detection of the objects. 
+
+Transfer learning is also performed by initializing the model with the pre-trained weights and perform the training on all the classification layers and detection layers.  The number of classes it can detect are 5 classes: Straight, Approach corner, Right Corner, Exit Corner and Exit Corner Completed as shown on the right.
+
+
