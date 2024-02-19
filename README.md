@@ -270,4 +270,122 @@ This plot is the mean average precision at 75% IOU threshold (all object sizes).
 
 ![Screenshot from 2024-02-19 14-27-25](https://github.com/chanhanxiang/jetbot/assets/107524953/c531029b-b17f-4d71-bb5e-da23a0bec087)
 
+DetectionBoxes_Recall/AR@1, 10 and 100:
+
+Each of these plots are mean average recalls by the number of detections in the image. For example, AR@10 means that it will compute the mean average recall across all images with at most 10 detection, for all classes, and for all IOU thresholds from 0.5 to 1. We will see the plot with 100 detections since it is biggest set. We get optimal value of 0.829 at 3k steps and is a remarkable result.
+
+DetectionBoxes_Recall/AR@100 large, medium and small objects:
+
+These plots are breakdowns of plot “DetectionBoxes_Recall/AR@100” into different detected object size. Optimal values at 3k steps are 0.8188 (medium) and 0.8438 (large).
+
+![Screenshot from 2024-02-19 14-30-40](https://github.com/chanhanxiang/jetbot/assets/107524953/f29d54ac-0155-4d25-ae7d-bfd7a03031fe)
+
+We can see that both classification and localization loss of training (blue) and evaluation (orange) curves are decreasing gradually, with the gap between them getting smaller which is a healthy sign. The regularization loss curves are decreasing which means that the regularization term in the loss function is adding bigger value to the overall loss function thereby causing any “useless” weights which do not contribute to good predictions to have small values. This is also a good sign showing overfitting is being managed properly. The lowest total loss is reached at step 3k (epoch 15) at checkpoint 16.
+
+Tensorboard Evaluation Images (Left is predicted; right is truth):
+
+![Screenshot from 2024-02-19 14-32-28](https://github.com/chanhanxiang/jetbot/assets/107524953/b0c46adb-aa4a-412d-81f8-644e8d2eb6c1)
+
+![Screenshot from 2024-02-19 14-32-49](https://github.com/chanhanxiang/jetbot/assets/107524953/d480e2c7-19dc-49e4-b4ac-f3bf9f8c32dd)
+
+The evaluations results are quite accurate.
+
+<h5>SSD Mobilenet V2 FPN Lite 320x320</h5>
+
+![Screenshot from 2024-02-19 14-34-28](https://github.com/chanhanxiang/jetbot/assets/107524953/68bada59-4cda-4c62-be58-0fcb2bb6fd90)
+
+DetectionBoxes_Precision/mAP; mAP for large, medium and small objects; mAP@.50IOU; mAP@.75IOU:
+
+![Screenshot from 2024-02-19 14-34-52](https://github.com/chanhanxiang/jetbot/assets/107524953/500c7402-1919-41a9-8c2d-d3847ac34886)
+
+We get optimal value of 0.6387 for mAP at 3470 steps.
+
+DetectionBoxes_Recall/AR@1, 10 and 100; AR@100 large, medium and small objects:
+
+![Screenshot from 2024-02-19 14-35-11](https://github.com/chanhanxiang/jetbot/assets/107524953/838db85c-dce6-480e-a016-f419c690679e)
+
+We get optimal value of 0.79 for AR@100 at 3470 steps.
+
+Loss/classification_loss; localization_loss; normalized_total_loss; regularization_loss; total_loss:
+
+![Screenshot from 2024-02-19 14-35-30](https://github.com/chanhanxiang/jetbot/assets/107524953/bafcbed1-b6c4-4adb-b8c9-15c6334b88e4)
+
+We get lowest total loss at step 3470.
+
+Model Comparison
+
+![Screenshot from 2024-02-19 14-35-48](https://github.com/chanhanxiang/jetbot/assets/107524953/f5b33e6a-5d8f-47ef-a084-41dcca21bded)
+
+Modifying Tensorflow2 detection source code:
+
+1. Suppress logging of training images to Tensorboard
+
+![Screenshot from 2024-02-19 14-38-27](https://github.com/chanhanxiang/jetbot/assets/107524953/f34c7e2a-4a99-4e8b-88fd-dfe347850782)
+
+2. Keep last 20 checkpoints, instead of the default value of 7 checkpoints
+
+![Screenshot from 2024-02-19 14-38-46](https://github.com/chanhanxiang/jetbot/assets/107524953/c1b1affb-5c16-4668-b60f-2cb3f2baac19)
+
+3. Suppress evaluation wait for 5 minutes
+
+![Screenshot from 2024-02-19 14-39-03](https://github.com/chanhanxiang/jetbot/assets/107524953/44cd9317-0a10-4266-9062-a5f3b417bb52)
+
+<h5>TFLite Conversion</h5>
+
+TensorFlow Lite (TFLite) is TensorFlow’s lightweight solution for mobile and embedded devices (also om Jetson nano). It enables on-device machine learning inference with low latency and a small binary size. TensorFlow Lite uses many techniques for this such as quantized kernels that allow smaller and faster (fixed-point math) models. The following are the inputs and output formats of TFLiite interpreter:
+
+![Screenshot from 2024-02-19 14-42-08](https://github.com/chanhanxiang/jetbot/assets/107524953/42e64e8c-00b7-4abe-802e-ff8eba7a44aa)
+
+Step 1: Export TFLite inference graph
+
+This step generates an intermediate SavedModel that can be used with the TFLite Converter Python API which is the recommended way instead of the tflite_convert tool.
+
+set PIPELINE_CONFIG_PATH="pipeline.config"
+set TRAINED_CHECKPOPINT_DIR="trained_model\checkpoint"
+set OUTPUT_DIRECTORY="export_tflite_graph_trained_model"
+
+python "models\research\object_detection\export_tflite_graph_tf2.py"
+--pipeline_config_path=%PIPELINE_CONFIG_PATH%
+--trained_checkpoint_dir=%TRAINED_CHECKPOPINT_DIR%
+--output_directory=%OUTPUT_DIRECTORY%
+
+Step 2: Convert to TFLite
+
+This step uses the TensorFlow Lite Converter Python api to convert the SavedModel (from previous step) to TFLite format.
+
+![Screenshot from 2024-02-19 14-44-53](https://github.com/chanhanxiang/jetbot/assets/107524953/e8181122-07ab-42c4-939e-1e7755464e65)
+
+Based on diagram above, the conversion path taken for this exercise is:
+
+High Level APIs -> SavedModel ->TFLite Converter -> TFLite Flatbuffer
+
+converter= tf.lite.TFLiteConverter.from_saved_model("export_tflite_graph_trained_model\saved_model")
+
+Also successfully tested with tf.compat.v1.lite.TFLiteConverter.from_frozen_graph with some pretrained models from TensorFlow 1 Detection Model Zoo. So Tensorflow 2 Lite Converter can still be used for TF1 models in the future, if required.
+
+converter = tf.compat.v1.lite.TFLiteConverter.from_frozen_graph(
+    graph_def_file=r"export_tflite_ssd_graph_ssdlite_mobilenet\tflite_graph.pb",
+    input_arrays=['normalized_input_image_tensor'],              
+    output_arrays=['TFLite_Detection_PostProcess',
+        'TFLite_Detection_PostProcess:1',
+        'TFLite_Detection_PostProcess:2',
+        'TFLite_Detection_PostProcess:3'],
+   input_shapes={'normalized_input_image_tensor': [1, 300, 300, 3]}
+)
+converter.allow_custom_ops = True
+
+Note: In order to use tf.compat.v1.lite.TFLiteConverter, the SavedModel must be generated with export_tflite_ssd_graph.py instead of export_tflite_graph_tf2.py during step 1:
+
+set PIPELINE_CONFIG_PATH="ssdlite_mobilenet_v2_coco_2018_05_09\pipeline.config"
+set trained_checkpoint_prefix=”ssdlite_mobilenet_v2_coco_2018_05_09\model.ckpt"
+set OUTPUT_DIRECTORY=”export_tflite_ssd_graph_ssd_mobilenet_v2”
+
+python "models\research\object_detection\export_tflite_ssd_graph.py"
+--pipeline_config_path=%PIPELINE_CONFIG_PATH%
+--trained_checkpoint_prefix=%trained_checkpoint_prefix%
+--output_directory=%OUTPUT_DIRECTORY%
+--add_postprocessing_op=true
+
+
+
 
