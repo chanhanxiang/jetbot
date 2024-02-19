@@ -334,6 +334,8 @@ Step 1: Export TFLite inference graph
 
 This step generates an intermediate SavedModel that can be used with the TFLite Converter Python API which is the recommended way instead of the tflite_convert tool.
 
+```bash
+
     set PIPELINE_CONFIG_PATH="pipeline.config"
     set TRAINED_CHECKPOPINT_DIR="trained_model\checkpoint"
     set OUTPUT_DIRECTORY="export_tflite_graph_trained_model"
@@ -358,6 +360,8 @@ converter= tf.lite.TFLiteConverter.from_saved_model("export_tflite_graph_trained
 <h5>tf.compat.v1.lite.TFLiteConverter</h5>
 
 Also successfully tested with tf.compat.v1.lite.TFLiteConverter.from_frozen_graph with some pretrained models from TensorFlow 1 Detection Model Zoo. So Tensorflow 2 Lite Converter can still be used for TF1 models in the future, if required.
+
+```bash
     
     converter = tf.compat.v1.lite.TFLiteConverter.from_frozen_graph(
         graph_def_file=r"export_tflite_ssd_graph_ssdlite_mobilenet\tflite_graph.pb",
@@ -371,6 +375,8 @@ Also successfully tested with tf.compat.v1.lite.TFLiteConverter.from_frozen_grap
     converter.allow_custom_ops = True
 
 Note: In order to use tf.compat.v1.lite.TFLiteConverter, the SavedModel must be generated with export_tflite_ssd_graph.py instead of export_tflite_graph_tf2.py during step 1:
+
+```bash
 
     set PIPELINE_CONFIG_PATH="ssdlite_mobilenet_v2_coco_2018_05_09\pipeline.config"
     set trained_checkpoint_prefix=”ssdlite_mobilenet_v2_coco_2018_05_09\model.ckpt"
