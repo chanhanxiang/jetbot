@@ -1,6 +1,6 @@
 <h2>Introduction</h2> 
 
-Self-driving cars or autonomous cars have been receiving tremendous attention due to Deep Neural Network (DNN) that automate a lot of manual tasks of driving the car. Autonomous cars are vehicles that are capable of sensing their environment and moving safely with little or no human input. The vehicles can interpret sensory information to identify appropriate navigation paths, as well as obstacles and relevant signage. The main motivation is to minimise road accident due to human error or fatigue while driving. 
+Self-driving cars or autonomous cars technology have been receiving tremendous attention due to Deep Neural Network (DNN) that automate a lot of manual tasks of driving the car. Autonomous cars are vehicles that are capable of sensing their environment and moving safely with little or no human input. The vehicles can interpret sensory information to identify appropriate navigation paths, as well as obstacles and relevant signage. The main motivation is to minimise road accident due to human error or fatigue while driving. 
 
 There a six different level of autonomous classification:
 
@@ -18,13 +18,7 @@ There a six different level of autonomous classification:
 
 ![SAE3016](https://github.com/chanhanxiang/jetbot/assets/107524953/96b8fd5b-3a94-4647-978a-52722f65a135)
 
-In this project, the car will be simulated using Jetson Nano Bots and the road that cars are driven on are simulated with a black single lane as the marker that the car would track on. The car will be self-driven on the road based on the video stream captured by the front-facing camera on the car.
-
-<h3>Problem statement</h3>
-
-Problem Articulation: 
-
-We will simulate a self-driving car and develop a deep learning model to detect the lane and map the position of the lane to direction to move (left or right) to keep the car on track of the road. 
+This project serves as a basic, simplified demonstration of Self-driving cars or autonomous cars technology. Jetson Nano Bots shall be used as a simple mockup for an Autonomous vehicle (AV), and the road that cars are driven on shall be represented as a black single lane as the marker that the car would track on. The AV will be self-driven on the road based on the video stream captured by the front-facing camera on the car.
 
 The objectives of this project are:
 
@@ -340,14 +334,14 @@ Step 1: Export TFLite inference graph
 
 This step generates an intermediate SavedModel that can be used with the TFLite Converter Python API which is the recommended way instead of the tflite_convert tool.
 
-set PIPELINE_CONFIG_PATH="pipeline.config"
-set TRAINED_CHECKPOPINT_DIR="trained_model\checkpoint"
-set OUTPUT_DIRECTORY="export_tflite_graph_trained_model"
-
-python "models\research\object_detection\export_tflite_graph_tf2.py"
---pipeline_config_path=%PIPELINE_CONFIG_PATH%
---trained_checkpoint_dir=%TRAINED_CHECKPOPINT_DIR%
---output_directory=%OUTPUT_DIRECTORY%
+    set PIPELINE_CONFIG_PATH="pipeline.config"
+    set TRAINED_CHECKPOPINT_DIR="trained_model\checkpoint"
+    set OUTPUT_DIRECTORY="export_tflite_graph_trained_model"
+    
+    python "models\research\object_detection\export_tflite_graph_tf2.py"
+    --pipeline_config_path=%PIPELINE_CONFIG_PATH%
+    --trained_checkpoint_dir=%TRAINED_CHECKPOPINT_DIR%
+    --output_directory=%OUTPUT_DIRECTORY%
 
 Step 2: Convert to TFLite
 
@@ -361,31 +355,55 @@ High Level APIs -> SavedModel ->TFLite Converter -> TFLite Flatbuffer
 
 converter= tf.lite.TFLiteConverter.from_saved_model("export_tflite_graph_trained_model\saved_model")
 
-Also successfully tested with tf.compat.v1.lite.TFLiteConverter.from_frozen_graph with some pretrained models from TensorFlow 1 Detection Model Zoo. So Tensorflow 2 Lite Converter can still be used for TF1 models in the future, if required.
+<h5>tf.compat.v1.lite.TFLiteConverter</h5>
 
-converter = tf.compat.v1.lite.TFLiteConverter.from_frozen_graph(
-    graph_def_file=r"export_tflite_ssd_graph_ssdlite_mobilenet\tflite_graph.pb",
-    input_arrays=['normalized_input_image_tensor'],              
-    output_arrays=['TFLite_Detection_PostProcess',
-        'TFLite_Detection_PostProcess:1',
-        'TFLite_Detection_PostProcess:2',
-        'TFLite_Detection_PostProcess:3'],
-   input_shapes={'normalized_input_image_tensor': [1, 300, 300, 3]}
-)
-converter.allow_custom_ops = True
+Also successfully tested with tf.compat.v1.lite.TFLiteConverter.from_frozen_graph with some pretrained models from TensorFlow 1 Detection Model Zoo. So Tensorflow 2 Lite Converter can still be used for TF1 models in the future, if required.
+    
+    converter = tf.compat.v1.lite.TFLiteConverter.from_frozen_graph(
+        graph_def_file=r"export_tflite_ssd_graph_ssdlite_mobilenet\tflite_graph.pb",
+        input_arrays=['normalized_input_image_tensor'],              
+        output_arrays=['TFLite_Detection_PostProcess',
+            'TFLite_Detection_PostProcess:1',
+            'TFLite_Detection_PostProcess:2',
+            'TFLite_Detection_PostProcess:3'],
+       input_shapes={'normalized_input_image_tensor': [1, 300, 300, 3]}
+    )
+    converter.allow_custom_ops = True
 
 Note: In order to use tf.compat.v1.lite.TFLiteConverter, the SavedModel must be generated with export_tflite_ssd_graph.py instead of export_tflite_graph_tf2.py during step 1:
 
-set PIPELINE_CONFIG_PATH="ssdlite_mobilenet_v2_coco_2018_05_09\pipeline.config"
-set trained_checkpoint_prefix=”ssdlite_mobilenet_v2_coco_2018_05_09\model.ckpt"
-set OUTPUT_DIRECTORY=”export_tflite_ssd_graph_ssd_mobilenet_v2”
-
-python "models\research\object_detection\export_tflite_ssd_graph.py"
---pipeline_config_path=%PIPELINE_CONFIG_PATH%
---trained_checkpoint_prefix=%trained_checkpoint_prefix%
---output_directory=%OUTPUT_DIRECTORY%
---add_postprocessing_op=true
-
-
+    set PIPELINE_CONFIG_PATH="ssdlite_mobilenet_v2_coco_2018_05_09\pipeline.config"
+    set trained_checkpoint_prefix=”ssdlite_mobilenet_v2_coco_2018_05_09\model.ckpt"
+    set OUTPUT_DIRECTORY=”export_tflite_ssd_graph_ssd_mobilenet_v2”
+    
+    python "models\research\object_detection\export_tflite_ssd_graph.py"
+    --pipeline_config_path=%PIPELINE_CONFIG_PATH%
+    --trained_checkpoint_prefix=%trained_checkpoint_prefix%
+    --output_directory=%OUTPUT_DIRECTORY%
+    --add_postprocessing_op=true
 
 
+<h5>Post-training quantization</h5>
+
+Float16 quantization is chosen among the various post-training quantization options. This is because it will not degrade accuracy that much while the models earlier used namely SSD mobilenet v2, is quite light weight and fast and thus does not need the full benefits of performance that comes with more sophisticated quantization methods such as Full integer quantization.
+
+Benefits of float16 quantization:
+
+- Model sized is halved since float32 becomes float16
+- Loss of accuracy kept at minimal
+- Supports GPU delegate which can operate directly on float16 data, resulting in faster execution than float32 computations.
+- 
+Possible disadvantages of float16 quantization:
+
+- limited latency reduction as compared to integer quantization (our selected models are light enough to forego this)
+- limited to GPU since CPU will dequantize a already quantized model (Jetson nano runs with GPU during inference so this is not an issue)
+
+![Float16quantization](https://github.com/chanhanxiang/jetbot/assets/107524953/9532f13b-25fe-4716-b2f5-f12965b7ab39)
+
+
+| Model                | No Optimization  | Float 16 Optimization |
+| :------------------: | :-----------:    | :-------------------: |
+| Custom SSD Mobilenet V2   |  < 1 sec    | << 1 sec              |
+| Custom SSD ResNet50 V1 FPN    |  >5 sec | >> 5 sec              |
+
+Considering the faster response time for inference, custom trained SSD mobilenet v2 is chosen as the final model for deployment into Jetbot Nano.
