@@ -192,6 +192,82 @@ Applications suitable for deployment are: robots in the factory floor to transfe
 
 Three pre-trained models (SSD MobileNet V2, SSD MobileNet V1 FPN and SSD ResNet50) were tried out. They are selected because SSD are the only detector support by TFLite in TensorFlow V2.3.1 for conversion to tflite files. MobileNet is selected due to the speed of the inference and ResNet50 for its accuracy in detection of the objects. 
 
-Transfer learning is also performed by initializing the model with the pre-trained weights and perform the training on all the classification layers and detection layers.  The number of classes it can detect are 5 classes: Straight, Approach corner, Right Corner, Exit Corner and Exit Corner Completed as shown on the right.
+Transfer learning is also performed by initializing the model with the pre-trained weights and perform the training on all the classification layers and detection layers.  The number of classes it can detect are 5 classes: Straight, Approach corner, Right Corner, Exit Corner and Exit Corner Completed as shown below.
+
+![Screenshot from 2024-02-19 14-09-58](https://github.com/chanhanxiang/jetbot/assets/107524953/67a1c8ad-e6b4-4417-90e3-2dd0f040130c)
+
+In addition to conditioning the car to follow the route, the car is also expected to accelerate or decelerate depending on the road condition. For example, when the car is on a straight road, the car can accelerate by increasing the time it moves on the road before stopping for performing the next inference. When the car is approaching a corner or bend, it should start to slow down. When the car turns around the corner, it should likewise slow down and make more frequent checks on the road condition. The should continue to move at slow speed while keeping on track. After the car has completed making the turn, it is expected to readjust the steering to straighten the direction and follow the road. When the car is on a straight road again, it should accelerate again while keeping on lane.
+
+<h5>Environment setup</h5>
+
+Latest Jetbot image 0.4.3 is used to flash the micro sd card. Swap space is enabled and gui is disabled to conserve resource. Default disk size of 32 GB is resized to full 64 GB. TensorFlow Lite converter python api (requires TF >=2.4) is used instead of tflite_convert tool as recommended by https://www.tensorflow.org/lite/convert.
+
+Disable GUI to conserve memory
+
+(./scripts/configure_jetson.sh)
+
+Enable swap memory
+
+(./scripts/enable_swap.sh)
+
+Default disk size of 32 GB is resized to full 64 GB
+
+Connect WIFI without GUI
+
+(sudo nmcli device wifi connect <SSID> password <PASSWORD>)
+
+<h5>SSD MobileNet V2</h5>
+
+The first model used was the SSD Mobilenet V2 as shown below. It is an efficient CNN architecture designed for mobile and vision application on embedded devices for real-time application. This architecture uses proven depth-wise separable convolutions to build lightweight deep neural networks. It splits all the convolutions on different subtasks. At the end it does approximately the same thing as a traditional convolution network but faster in speed. 
+
+![SSD](https://github.com/chanhanxiang/jetbot/assets/107524953/44a7b6b0-5811-4c6e-a92d-03f41b8ae4b8)
+
+In addition, the author selected this model due to the road pattern being easily distinguishable from the 5 classes. For the SSD Mobilenet V2, the loss obtained was 0.301, overall precision and recall are 0.6 mAP and 0.7 AR. By using transfer learning, this accuracy was accomplished by training the object detection model for 1400 steps in around 50 mintues (see Appendix for more detail on performance metric graph). 
+
+![Screenshot from 2024-02-19 14-18-32](https://github.com/chanhanxiang/jetbot/assets/107524953/4d374995-adc2-4c42-a8b0-ae90fa32e1a7)
+
+Detection of the 5 object classes on the Training data:
+
+![Screenshot from 2024-02-19 14-18-52](https://github.com/chanhanxiang/jetbot/assets/107524953/dd4228bd-2809-4d7d-a566-b9caf7324085)
+
+Evaluation on the Object Detection of the 5 classes on the Test data:
+
+![Screenshot from 2024-02-19 14-19-06](https://github.com/chanhanxiang/jetbot/assets/107524953/4e76b5d6-30d9-4367-8c8d-a4bf06891542)
+
+<h5>SSD ResNet50 V1 FPN 640x640 (RetinaNet50)</h5>
+
+![Retinanet50](https://github.com/chanhanxiang/jetbot/assets/107524953/ce4618af-d062-4037-9f17-4d6eda307bbe)
+
+RestinaNet50 is a SSD PFN object detection model based on the ResNet50 architecture trained with COCO dataset images. The published speed and COCO mAP of the pretrained model in tensorflow 2 object detection zoo is 46ms and 34.3 respectively. It trades greater latency for higher accuracy. 
+
+Below are the main changes made to pipeline configuration file for the customized SSD ResNet50 V1 FPN.
+
+![Screenshot from 2024-02-19 14-24-18](https://github.com/chanhanxiang/jetbot/assets/107524953/f12988d1-dd8f-4c20-8ec0-376e80e7873e)
+
+Batch size of 4 is used because other bigger values (i.e. 64,32, 16, 8) give out of memory error. Because of the smaller batch size, we cannot use the high default learning rate of 0.04 (meant for default batch size 64) used by pretrained model. So we reduce default rate by a factor of 16 which is 0.0025. This gives a more stable and sustained training. We are not concerned about this rate being too high still because the learning rate will be gradually reduced as training proceeds by the Cosine Decay Schedule.
+
+Warmup is usually needed to stabilise the initial training period when large batch size is used with high learning rate. The learning rate will be set smaller during the warmup period so that loss values will not have too drastic differences between steps. Because we are only using small batch size 4, and with a much reduced learning rate, there is no need for long warmup. Therefore, warmup steps is set to 125 steps.
+
+TensorBoard charts generated:
+
+![Screenshot from 2024-02-19 14-26-09](https://github.com/chanhanxiang/jetbot/assets/107524953/06c2bfaf-0749-4983-a2b5-d9a19a7921a9)
+
+DetectionBoxes_Precision/mAP:
+
+This plot is the mean average precision averaged over IOU thresholds ranging from .5 to .95 with .05 increments, and over all object sizes. Since it is mean AP (and not AP) therefore it is by nature averaged over the 5 classes. Optimal value at 3k steps is 0.6753.
+
+DetectionBoxes_Precision/mAP for large, medium and small objects:
+
+These plots are is breakdowns of “DetectionBoxes_Precision/mAP” and is the mean average precision for small objects (area < 1024 pixels), medium objects (area 1024 to 9216 pixels) and large objects (area 9216 to 100m pixels). Our images are 224x224=50,176 pixels so there chance objects will fall under all 3 categories (small is unlikely due to annotated objects in training images is at least medium). Optimal values at 3k steps are 0.6859 (large) and 0.7611 (medium).
+
+DetectionBoxes_Precision/mAP@.50IOU:
+
+This plot is the mean average precision at 50% IOU threshold (all object sizes). Achieving at least 50%IOU is a normal standard. We get optimal value of 0.8419 at 3k steps and is a good result.
+
+DetectionBoxes_Precision/mAP@.75IOU:
+
+This plot is the mean average precision at 75% IOU threshold (all object sizes). Achieving at least 75% IOU is a very stringent standard. We get optimal value of 0.8419 at 3k steps and is a remarkable result. This means that at each recall value, we can get a higher precision level compared to baseline of 0.75 mAP (or 75% area under the PRC curve).
+
+![Screenshot from 2024-02-19 14-27-25](https://github.com/chanhanxiang/jetbot/assets/107524953/c531029b-b17f-4d71-bb5e-da23a0bec087)
 
 
